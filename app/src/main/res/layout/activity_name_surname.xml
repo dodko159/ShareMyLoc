@@ -45,12 +45,12 @@
 
 
         <Button
-            android:id="@+id/btn_reset_password"
+            android:id="@+id/btn_save"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dip"
             android:background="@color/colorAccent"
-            android:text="@string/btn_reset_password"
+            android:text="@string/save"
             android:textColor="@android:color/black" />
         <!--
                 <Button
