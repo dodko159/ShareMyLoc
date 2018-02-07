@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.gson.Gson;
+import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -18,6 +19,7 @@ import cz.utb.fai.dodo.sharemyloc.Person;
 public class Shared extends AppCompatActivity {
     public static final String SHARED_FRIENDS = "friends";
     public static final String SHARED_FILE = "shared_variables";
+    public static final String FROM_ACCOUNT_ACTIVITY = "from_accont_activity";
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -60,6 +62,16 @@ public class Shared extends AppCompatActivity {
         String json = gson.toJson(list);
 
         editor.putString(key, json);
+        editor.commit();
+    }
+
+    public void saveStringToShared(String key, String value){
+        editor.putString(key, value);
+        editor.commit();
+    }
+
+    public void saveBooleanToShared(String key, Boolean value){
+        editor.putBoolean(key, value);
         editor.commit();
     }
 }

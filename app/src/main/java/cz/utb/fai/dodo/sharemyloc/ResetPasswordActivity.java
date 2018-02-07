@@ -30,6 +30,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
         btnReset = (Button) findViewById(R.id.btn_reset_password);
         btnBack = (Button) findViewById(R.id.btn_back);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         auth = FirebaseAuth.getInstance();
 
@@ -69,4 +70,9 @@ public class ResetPasswordActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onNavigateUp(){
+        finish();
+        return true;
+    }
 }

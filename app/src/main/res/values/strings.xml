@@ -34,4 +34,6 @@
     <string name="account">Account</string>
     <string name="signout">Sign out</string>
     <string name="quit">Quit</string>
+    <string name="change_name_surname">Change name and surname</string>
+    <string name="prompt_password">Enter old password</string>
 </resources>

@@ -2,16 +2,23 @@ package cz.utb.fai.dodo.sharemyloc;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Person> friends;
     private Shared shared;
     private SharedPreferences sharedPref;
+    private FirebaseAuth auth;
+    private FirebaseAuth.AuthStateListener authListener;
 
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
@@ -34,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        auth = FirebaseAuth.getInstance();
 
         friends = new ArrayList<Person>();
 
@@ -61,6 +72,19 @@ public class MainActivity extends AppCompatActivity {
         };
 
         usersdRef.addListenerForSingleValueEvent(eventListener);
+
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    // user auth state is changed - user is null
+                    // launch login activity
+                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                    finish();
+                }
+            }
+        };
 /*
         Button btn = (Button) findViewById(R.id.button2);
 
@@ -91,5 +115,50 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new MyAdapter(listItems);
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_account) {
+            startActivity(new Intent(MainActivity.this, AccountActivity.class));
+            return true;
+        }else if(id == R.id.action_signout){
+            auth.signOut();
+            //// TODO: 03.02.2018 prepnut do loginActivity
+            return true;
+        }else if(id == R.id.action_quit){
+            finish();
+            //// TODO: 03.02.2018 pada to
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        auth.addAuthStateListener(authListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (authListener != null) {
+            auth.removeAuthStateListener(authListener);
+        }
     }
 }
