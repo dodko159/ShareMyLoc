@@ -36,6 +36,8 @@ public class AccountActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
         shared = new Shared(sharedPref);
 

@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
 
+    private Button mapBtn;
+
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
 
@@ -47,9 +49,12 @@ public class MainActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         friends = new ArrayList<Person>();
+        mapBtn = (Button) findViewById(R.id.mapBtn);
 
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
         shared = new Shared(sharedPref);
+
+        startService(new Intent(MainActivity.this, PositionService.class));
 
         //Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         //setSupportActionBar(toolbar);
@@ -72,6 +77,13 @@ public class MainActivity extends AppCompatActivity {
         };
 
         usersdRef.addListenerForSingleValueEvent(eventListener);
+
+        mapBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            }
+        });
 
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -136,8 +148,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, AccountActivity.class));
             return true;
         }else if(id == R.id.action_signout){
+            stopService(new Intent(MainActivity.this, PositionService.class));
             auth.signOut();
-            //// TODO: 03.02.2018 prepnut do loginActivity
             return true;
         }else if(id == R.id.action_quit){
             finish();
@@ -160,5 +172,11 @@ public class MainActivity extends AppCompatActivity {
         if (authListener != null) {
             auth.removeAuthStateListener(authListener);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(MainActivity.this, PositionService.class));
     }
 }
