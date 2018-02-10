@@ -1,6 +1,7 @@
 package cz.utb.fai.dodo.sharemyloc;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -83,6 +84,7 @@ public class SignupActivity extends AppCompatActivity {
                                     Toast.makeText(SignupActivity.this, "Authentication failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
+                                    new Shared(getSharedPreferences(Shared.SHARED_FILE, MODE_PRIVATE)).saveBooleanToShared(Shared.FROM_ACCOUNT_ACTIVITY,false);
                                     startActivity(new Intent(SignupActivity.this, NameSurnameActivity.class));
                                     finish();
                                 }
