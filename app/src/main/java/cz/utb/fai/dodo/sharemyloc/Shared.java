@@ -3,6 +3,7 @@ package cz.utb.fai.dodo.sharemyloc;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
@@ -20,6 +21,9 @@ public class Shared extends AppCompatActivity {
     public static final String SHARED_FRIENDS = "friends";
     public static final String SHARED_FILE = "shared_variables";
     public static final String FROM_ACCOUNT_ACTIVITY = "from_accont_activity";
+    public static final String SHARED_POSITIONS = "positions";
+    public static final String SHARED_POSITION = "position";
+    public static final String SHARED_NAME = "name";
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -42,7 +46,7 @@ public class Shared extends AppCompatActivity {
         saveListToShared(SHARED_FRIENDS, friends, editor);
     }
 
-    public ArrayList<Person> loadFromShared(){
+    public ArrayList<Person> loadPersonsFromShared(){
         Gson gson = new Gson();
 
         String json = sharedPref.getString(SHARED_FRIENDS,"");
@@ -55,6 +59,41 @@ public class Shared extends AppCompatActivity {
 
         // return jsonListToPersonList(persons);
         return persons;
+    }
+
+    public ArrayList<LatLng> loadPositionsFromShared(){
+        Gson gson = new Gson();
+
+        String json = sharedPref.getString(SHARED_POSITIONS,"");
+        if(json == "") return new ArrayList<LatLng>();
+
+        Type listType = new TypeToken<ArrayList<Person>>() {
+        }.getType();
+
+        ArrayList<LatLng> positions = gson.fromJson(json, listType);
+
+        // return jsonListToPersonList(persons);
+        return positions;
+    }
+
+    public LatLng loadPosition(){
+
+        String json = sharedPref.getString(SHARED_POSITION,"");
+
+        Type type = new TypeToken<LatLng>() {
+        }.getType();
+
+        LatLng position = new Gson().fromJson(json,type);
+
+        return position;
+    }
+
+    public void savePosition(LatLng latLng){
+        Gson gson = new Gson();
+        String json = gson.toJson(latLng);
+
+        editor.putString(SHARED_POSITION, json);
+        editor.commit();
     }
 
     public <Person> void saveListToShared(String key, ArrayList<Person> list, SharedPreferences.Editor editor){

@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
         friends = new ArrayList<Person>();
         mapBtn = (Button) findViewById(R.id.mapBtn);
+        recyclerView = (RecyclerView) findViewById(R.id.friends_view);
 
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
         shared = new Shared(sharedPref);
@@ -77,6 +79,38 @@ public class MainActivity extends AppCompatActivity {
         };
 
         usersdRef.addListenerForSingleValueEvent(eventListener);
+
+        final DatabaseReference positionsRef = rootRef.child("positions");
+        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener(){
+            @Override
+            public void onItemClick(View view, int position) {
+                String name = friends.get(position).getFullName();
+                String uid = friends.get(position).getUid();
+                shared.saveStringToShared(Shared.SHARED_NAME,name);
+                //// TODO: 10.02.2018 zmenit na RealmDB
+                positionsRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        LatLng latLng = new LatLng(
+                                dataSnapshot.child("latitude").getValue(Long.class),
+                                dataSnapshot.child("longitude").getValue(Long.class)
+                        );
+                       shared.savePosition(latLng);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                startActivity(new Intent(MainActivity.this, MapsActivity.class));
+            }
+            @Override
+            public void onLongItemClick(View view, int position) {
+                //On Long press event here
+            }
+        }));
 
         mapBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,10 +148,10 @@ public class MainActivity extends AppCompatActivity {
         List<String> people = Person.listOfPersonsToFullNames(friends);
         ArrayList<ListItem> listItems = new ArrayList<>();
 
-        recyclerView = (RecyclerView) findViewById(R.id.friends_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+
 
         //// TODO: 29.01.2018 pridat boolean do Person kvoli chackboxu
         for (String fullName : people) {

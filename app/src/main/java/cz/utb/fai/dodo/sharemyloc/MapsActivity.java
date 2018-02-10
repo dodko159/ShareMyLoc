@@ -1,5 +1,6 @@
 package cz.utb.fai.dodo.sharemyloc;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -24,8 +25,11 @@ import java.util.List;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private Shared shared;
 
     LocationManager locationManager;
+    SharedPreferences.OnSharedPreferenceChangeListener spChanged;
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,47 +41,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-                @Override
-                public void onLocationChanged(Location location) {
-                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
+        shared = new Shared(sharedPref);
 
-                    //LatLng sydney = new LatLng(-34, 151);
-                    String name = "Me";
+        sharedListener();
+    }
 
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(name));
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,13.5f));
+    private void sharedListener() {
+        spChanged = new
+                SharedPreferences.OnSharedPreferenceChangeListener() {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+                                                          String key) {
+                        if(key.equals(Shared.SHARED_POSITIONS)){
 
-                }
-
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                }
-
-                @Override
-                public void onProviderEnabled(String provider) {
-
-                }
-
-                @Override
-                public void onProviderDisabled(String provider) {
-
-                }
-            });
-        }
+                        }
+                    }
+                };
     }
 
 
@@ -95,8 +75,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        /*LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney,15f));*/
+        LatLng position = shared.loadPosition();
+        String name = sharedPref.getString(Shared.SHARED_NAME,"");
+        mMap.addMarker(new MarkerOptions().position(position).title(name));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position,13f));
     }
 }
