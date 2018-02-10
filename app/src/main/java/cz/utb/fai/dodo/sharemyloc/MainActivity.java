@@ -37,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
 
-    private Button mapBtn;
-
     private RecyclerView recyclerView;
     private RecyclerView.Adapter adapter;
 
@@ -50,13 +48,12 @@ public class MainActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         friends = new ArrayList<Person>();
-        mapBtn = (Button) findViewById(R.id.mapBtn);
         recyclerView = (RecyclerView) findViewById(R.id.friends_view);
 
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
         shared = new Shared(sharedPref);
 
-        startService(new Intent(MainActivity.this, PositionService.class));
+        startService(new Intent(MainActivity.this,PositionService.class));
 
         //Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         //setSupportActionBar(toolbar);
@@ -80,30 +77,13 @@ public class MainActivity extends AppCompatActivity {
 
         usersdRef.addListenerForSingleValueEvent(eventListener);
 
-        final DatabaseReference positionsRef = rootRef.child("positions");
         recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerView, new RecyclerItemClickListener.OnItemClickListener(){
             @Override
             public void onItemClick(View view, int position) {
-                String name = friends.get(position).getFullName();
                 String uid = friends.get(position).getUid();
+                String name = friends.get(position).getFullName();
+                shared.saveStringToShared(Shared.SHARED_WATCHING,uid);
                 shared.saveStringToShared(Shared.SHARED_NAME,name);
-                //// TODO: 10.02.2018 zmenit na RealmDB
-                positionsRef.child(uid).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        LatLng latLng = new LatLng(
-                                dataSnapshot.child("latitude").getValue(Long.class),
-                                dataSnapshot.child("longitude").getValue(Long.class)
-                        );
-                       shared.savePosition(latLng);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-
                 startActivity(new Intent(MainActivity.this, MapsActivity.class));
             }
             @Override
@@ -111,13 +91,6 @@ public class MainActivity extends AppCompatActivity {
                 //On Long press event here
             }
         }));
-
-        mapBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, MapsActivity.class));
-            }
-        });
 
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -182,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, AccountActivity.class));
             return true;
         }else if(id == R.id.action_signout){
-            stopService(new Intent(MainActivity.this, PositionService.class));
+            //(new Intent(MainActivity.this, PositionService.class));
             auth.signOut();
             return true;
         }else if(id == R.id.action_quit){

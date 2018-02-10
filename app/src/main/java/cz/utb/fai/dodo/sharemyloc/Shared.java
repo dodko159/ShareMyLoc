@@ -24,6 +24,7 @@ public class Shared extends AppCompatActivity {
     public static final String SHARED_POSITIONS = "positions";
     public static final String SHARED_POSITION = "position";
     public static final String SHARED_NAME = "name";
+    public static final String SHARED_WATCHING = "watch";
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;

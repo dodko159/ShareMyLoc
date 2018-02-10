@@ -11,13 +11,20 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,6 +37,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LocationManager locationManager;
     SharedPreferences.OnSharedPreferenceChangeListener spChanged;
     private SharedPreferences sharedPref;
+    private DatabaseReference positionsRef;
+    private DatabaseReference namesRef;
+    private DatabaseReference dRef;
+    private String name;
+    private MarkerOptions markerOption;
+    private Marker m;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +50,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+        final SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        mapFragment.setMenuVisibility(true);
 
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
-        shared = new Shared(sharedPref);
 
         sharedListener();
+
+        dRef = FirebaseDatabase.getInstance().getReference();
+        positionsRef = dRef.child("positions");
+
+        String uid = sharedPref.getString(Shared.SHARED_WATCHING,"");
+        name = sharedPref.getString(Shared.SHARED_NAME,"");
+
+        markerOption = new MarkerOptions().position(new LatLng(0,0)).title(name);
+
+        positionsRef.child(uid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                LatLng latLng = new LatLng(
+                        dataSnapshot.child("latitude").getValue(Double.class),
+                        dataSnapshot.child("longitude").getValue(Double.class)
+                );
+                m.setPosition(latLng);
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,12.5f));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(),databaseError.getMessage(),Toast.LENGTH_SHORT);
+            }
+        });
     }
 
     private void sharedListener() {
@@ -74,10 +113,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        m = mMap.addMarker(markerOption);
+
         // Add a marker in Sydney and move the camera
-        LatLng position = shared.loadPosition();
+       /* LatLng position = shared.loadPosition();
         String name = sharedPref.getString(Shared.SHARED_NAME,"");
         mMap.addMarker(new MarkerOptions().position(position).title(name));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position,13f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position,13f));*/
     }
 }

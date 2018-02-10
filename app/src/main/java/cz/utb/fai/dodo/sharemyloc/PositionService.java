@@ -20,6 +20,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Created by Dodo on 09.02.2018.
  */
@@ -30,7 +32,7 @@ public class PositionService extends Service{
     private FirebaseDatabase database;
     private FirebaseAuth auth;
     private DatabaseReference myRef;
-    private  String uid;
+    private String uid;
 
     @Nullable
     @Override

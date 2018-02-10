@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -25,6 +26,7 @@ public class NameSurnameActivity extends AppCompatActivity {
     private DatabaseReference myRef;
     private Shared shared;
     private SharedPreferences sharedPref;
+    private String uid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +38,13 @@ public class NameSurnameActivity extends AppCompatActivity {
         saveBtn = (Button) findViewById(R.id.btn_save);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        database = FirebaseDatabase.getInstance();
-        myRef = database.getReference("names");
 
         auth = FirebaseAuth.getInstance();
+
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("positions");
+
+        uid = auth.getCurrentUser().getUid();
 
         sharedPref = getSharedPreferences(shared.SHARED_FILE, MODE_PRIVATE);
         shared = new Shared(sharedPref);
@@ -48,7 +53,10 @@ public class NameSurnameActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }else {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            myRef.child(uid).setValue(new LatLng(0,0));
         }
+
+        myRef = database.getReference("names");
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,7 +64,6 @@ public class NameSurnameActivity extends AppCompatActivity {
 
                 progressBar.setVisibility(View.VISIBLE);
 
-                String uid = auth.getCurrentUser().getUid();
                 String name = nameEditText.getText().toString().trim();
                 String surname = surnameEditText.getText().toString();
 
@@ -83,8 +90,13 @@ public class NameSurnameActivity extends AppCompatActivity {
 
     }
 
+
     @Override
-    public void onBackPressed() {
+    public boolean onSupportNavigateUp() {
         shared.saveBooleanToShared(Shared.FROM_ACCOUNT_ACTIVITY,false);
+        return super.onSupportNavigateUp();
     }
+
 }
+
+//// TODO: 10.02.2018 add on back button  aby sa nastavil false  from_acc_act
